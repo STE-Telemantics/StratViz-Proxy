@@ -6,7 +6,8 @@ package specificationstuff;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
+
+import emreparser.*;
 
 //CONSULT DRIVE FOR EASIER OVERVIEW OF FUNCTIONS - https://drive.google.com/drive/u/0/folders/1vgE6a2_4SK2RJL6YsllVkD5Wmiu9INAC 
 
@@ -30,8 +31,6 @@ import java.util.Arrays;
  */
 import java.util.HashMap;
 import java.util.List;
-import java.util.HashMap;
-import CANParser.canparser.src.main.java.com.ste.*;
 
 public class CANEnumParser {
 	//The idea of this class is that we receive a CAN message such as the string 'testmsg' down below, and we convert it to a hashmap that contains the name of the variable
@@ -53,42 +52,96 @@ public class CANEnumParser {
     //by using the file 'CAN_typedef_2019_17-format.csv' file.
      static String ACUdef = "enum ACUMode:uint8_t{ACUModeRDW,ACUModeWSC,DARE}";
      static String InvertDef = "enum InverterType:uint8_t{InverterTypeUnknown,Tritium,NLE}";
-        
-        
-	//The hashmap that includes the transformed data.
-	static HashMap<String, CANTypedef> mapping = new HashMap<>();
 
-	//This method creates a hashmap of hashmaps of the form <enumName, hashmap<bytesequence, state>>, where enumName is the name of the enumeration, and the nested hashmap contains all possible
-	//states that said enum with enumNume can have together with their unique bytesequence.
-	static void parseTypedef() {
-		String[] result = ACUdef.split(",");
+	/**
+	 * Create a Hashmap for each Enum which contains the bitsequence for that specific state of an enum.
+	 *
+	 * This bitsequence/state pair is a key/value pair in the inner HashMap. The key of the outer HashMap is the name of the enum
+	 * class. Together with the inner Hashmap we then get the following form:
+	 *
+	 * 	HashMap<String EnumName, HashMap<String Bitsequence, String StateName>>
+	 *
+	 * A concrete example of a single entry is as follows:
+	 * 	<"AcuMode", <"00000010", "DARE">>
+	 *
+	 * @return A HashMap containing the Enum classname as the key, and another Hashmap containing a String denoting
+	 * the bitsequence as the key and a String denoting the statename as the value
+	 */
+	public HashMap<String, HashMap<String, String>> parseTypedef() {
 
-		CANTypedef type = new CANTypedef();
+		HashMap<String, HashMap<String, String>> parsedEnums = new HashMap<>();
 
-		type.name = result[0];
-		type.description = result[2];
+		// First we make use of the CANParser class to read in the default typedefs.csv file and extract all the fields per typedef
+		CANParser cp = new CANParser();
 
-		type.options = new HashMap<Byte, String>();
+		// Store all the parsed typedefs in a list of ParsedTypedef objects
+		List<TypedefObject> lpdf = cp.parseTypedefsDefault();
 
-		String optionstring = result[2];
+		// Now iterate through the list of parsed typedefs and build the Hashmap by getting the name of the enum and its codestates.
+		// Assign the corresponding bitsequence to it and store it in the Hashmap
+		for (TypedefObject pdf : lpdf) {
+			// Build the Hashmap<String, String> first (e.g. the value of a parsed enum)
+			HashMap<String, String> bitsequenceStateMap = new HashMap<>();
 
-		String options = optionstring.split("{")[1].split("}")[0];
-		String optionsCSV = options.replace(" ", ""); // Replace spaces with no space if any exist
+			// Get all the codestates this Enum class can take
+			String[] codeStates = pdf.getCodeStates();
 
-		String[] optionswhatever = optionsCSV.split(","); // [RDW=0x0] [WSC0x4] [DARE=0x5]
+			// We're going to check whether a byte sequence is already defined in the typedefs file. If so, use that value.
+			// Else we assign our own values
+			boolean isPredefined = false;
 
-		for (byte i = 0; i < optionswhatever.length; i++) {
-			if (optionswhatever[i].contains("=")) { // If the byte value is defined, use that one
-				// Split on =
-				String[] splits = optionswhatever[i].split("="); // [RWD] [0x0]
-				byte bytee = Byte.parseByte(splits[1].split("x")[1]); // Read 0x0 as a byte
-				type.options.put(bytee, splits[0]);
-			} else {
-				type.options.put(i, optionswhatever[i]);
+			for (String s : codeStates) {
+				// We have a hit, this state is predefined
+				if (s.contains("=")) {
+
+					isPredefined = true;
+
+					// Extract the predefined state by splitting on the "=" sign
+					String[] predefinedState = s.split("=");
+
+					// Remove any trailing spaces and save the predefined name and its value
+					String name = predefinedState[0].trim();
+					String value = predefinedState[1].trim();
+
+					// We now have all the predefined states in an array, check whether this is a hex or integer
+					if (value.contains("0x")) {
+						// This is a hex, parse it to an integer
+						int i = Integer.decode(value);
+
+						// Add the String bitsequence, String StateName pair to the inner HashMap
+						bitsequenceStateMap.put(String.format("%08d", Integer.parseInt(Integer.toString(i, 2))), name);
+					} else {
+						// This is an int, parse it to a Byte
+						int i = Integer.parseInt(value);
+
+						bitsequenceStateMap.put(String.format("%08d", Integer.parseInt(Integer.toString(i, 2))), name);
+					}
+				}
 			}
+
+			// TODO: Make it so that we don't have to hardcode these states
+			// There are 3 enums that have only a single (the first) state predefined as "0". Assign bitsequences to the rest of the states
+			if (isPredefined) {
+				String name = pdf.getName();
+				if (name.equals("KeyStatus") || name.equals("LVCState") || name.equals("VehicleState")) {
+					for (int i = 1; i < pdf.getCodeStates().length; i++) {
+						bitsequenceStateMap.put(String.format("%08d", Integer.parseInt(Integer.toString(i, 2))), pdf.getCodeStates()[i]);
+					}
+				}
+			}
+
+			// No predefined states were found for this Enum, continue with the basic assignment of bitsequences, starting with 0
+			if (!isPredefined) {
+				for (int i = 0; i < pdf.getCodeStates().length; i++) {
+					bitsequenceStateMap.put(String.format("%08d", Integer.parseInt(Integer.toString(i, 2))), pdf.getCodeStates()[i]);
+				}
+			}
+
+			// Now that we have mapped all the states to a bitsequence, set this as the key in the inner hashmap and use the statename as the value
+			parsedEnums.put(pdf.getName(), bitsequenceStateMap);
 		}
 
-		mapping.put(type.name, type);
+		return parsedEnums;
 	}
 
 	//Takes a CAN message "(1600453413.322000) canx 12d#01c90100a819d400" (which is in hexadecimal notation and contains 8 bytes) to a list of bytes 
