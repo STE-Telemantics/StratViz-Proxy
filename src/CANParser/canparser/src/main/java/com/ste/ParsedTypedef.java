@@ -70,7 +70,11 @@ public class ParsedTypedef {
         
         if (m.find())
             this.codeStates = m.group(1).split(",");
-        
+
+        // Remove trailing and leading spaces from the codestates
+        for (int i = 0; i < codeStates.length; i++) {
+            this.codeStates[i] = this.codeStates[i].trim();
+        }
             //TODO: exception handling when format isn't correct
     }   
 
