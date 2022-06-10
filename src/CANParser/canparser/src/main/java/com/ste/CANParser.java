@@ -3,6 +3,7 @@ package com.ste;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.JFileChooser;
@@ -158,7 +159,6 @@ public class CANParser {
 
         List<ParsedTypedef> lpdf = cp.parseTypedefsDefault();
         List<ParsedMessage> lpm = cp.parseMessagesDefault();
-
 
         // Do some basic testing. NB: not a substitution for unit tests!!
         final boolean PARSER_DEBUG = false;
