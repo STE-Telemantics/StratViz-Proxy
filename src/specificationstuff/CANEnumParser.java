@@ -329,8 +329,110 @@ public class CANEnumParser {
 	}
 
 	This is a specific format that allows for easier sending, receiving and parsing.
+	
+	As for what the lists are, please refer to the overview on google drive.
 	*/
-	public String determineConcreteData() {
+	public String determineConcreteData(List<String> l1, List<String> l2, List<String> l3) {
+
+		List<String> result = new ArrayList<>();
+
+		for(int i = 0; i < l1.size() + 1; i++) {
+			dataType = l1.get(i);
+			bytes = l3.get(i);
+
+			switch (dataType.replaceAll(" ", "")) {
+
+				case "int"://timestamp
+				int timestamp = 0; //TO DO
+
+				case "bool": //8 bits
+					if (bytes.equals("00000000")) {
+						result.add("false");
+					} else {
+						result.add("true");
+					}
+					break;
+				
+				case "bool:1": //1 bit
+					if(bytes.equals("0")) {
+						result.add("false");
+					} else {
+						result.add("true");
+					}
+					break;
+				
+				case "uint8_t": 
+					result.add(Integer.toString(Integer.parseInt(bytes, 2)));
+					break;
+				
+				case "uint16_t": 
+					result.add(Integer.toString(Integer.parseInt(bytes, 2)));
+					break;
+						
+				case "uint32_t": 
+					result.add(Integer.toString(Integer.parseInt(bytes, 2)));
+					break;	
+				
+				case "uint64_t": 
+					result.add(Integer.toString(Integer.parseInt(bytes, 2)));
+					break;
+					
+				case "int8_t": 
+					String decimalValue; //final value to be calculated. Needs to be done in two steps: 1) determine if the value is negative or positive 2) determine value
+
+					if(bytes.substring(0,1).equals("1")) { //if the first bit is a '1' the value is negative.
+						decimalValue = "-";
+					}
+					
+					decimal.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2)));
+					result.add(decimal);
+					break;
+				
+				case "int16_t": 
+					String decimalValue; 
+
+					if(bytes.substring(0,1).equals("1")) { 
+						decimalValue = "-";
+					}
+					
+					decimal.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2))); 
+					result.add(decimal);
+					break;
+						
+				case "int32_t": 
+					String decimalValue; 
+
+					if(bytes.substring(0,1).equals("1")) { 
+						decimalValue = "-";
+					}
+					
+					decimal.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2))); 
+					result.add(decimal);
+					break;	
+				
+				case "int64_t": 
+					String decimalValue;
+
+					if(bytes.substring(0,1).equals("1")) { 
+						decimalValue = "-";
+					}
+					
+					decimal.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2)));
+					result.add(decimal);
+					break;
+				
+				case "float": 
+					int intBits = Integer.parseInt(bytes, 2);
+					String floatValue = Float.intBitsToFloat(intBits).toString();
+					result.add(floatValue);
+					break;
+
+				default: //None of the other cases, thus it must be an enum.
+					CanTypeDef enums = mapping.get(dataType);
+					
+					break;
+				}
+		}
 		String temp = "temp";
 		return temp;
 	}
