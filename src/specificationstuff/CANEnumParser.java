@@ -365,6 +365,8 @@ public class CANEnumParser {
 		return result;
 	}
 
+	HashMap<String, HashMap<String, String>> enums = parseTypedef(); //the hashmap of enums with their corresponding byte sequence. See overview on the drive for details.
+
 	/* Finally, we use the hashmap created by determineBits() to determine what state the bytesequence
 	on the left partains. The integers and booleans all have set bit/byte sequences (see top of this java file), 
 	so those can be translated directly. The result should look as follows: 
@@ -481,8 +483,9 @@ public class CANEnumParser {
 					break;
 
 				default: //None of the other cases, thus it must be an enum.
-					CanTypeDef enums = mapping.get(dataType);
-					
+					HashMap<String, String> options = enums.get(dataType);
+					String enumValue = options.get(bytes);
+					result.add(enumValue);
 					break;
 				}
 		}
