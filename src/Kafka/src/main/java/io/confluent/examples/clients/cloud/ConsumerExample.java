@@ -31,6 +31,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 
+// Import socketio
 public class ConsumerExample {
 
   public static void main(final String[] args) throws Exception {
@@ -39,12 +40,19 @@ public class ConsumerExample {
       System.exit(1);
     }
 
+    // Create socketio server instance
+    // Configure the instance
+    // Enable the server/start the server
+
     final String topic = args[1];
 
     // Load properties from a local configuration file
-    // Create the configuration file (e.g. at '$HOME/.confluent/java.config') with configuration parameters
-    // to connect to your Kafka cluster, which can be on your local host, Confluent Cloud, or any other cluster.
-    // Follow these instructions to create this file: https://docs.confluent.io/platform/current/tutorials/examples/clients/docs/java.html
+    // Create the configuration file (e.g. at '$HOME/.confluent/java.config') with
+    // configuration parameters
+    // to connect to your Kafka cluster, which can be on your local host, Confluent
+    // Cloud, or any other cluster.
+    // Follow these instructions to create this file:
+    // https://docs.confluent.io/platform/current/tutorials/examples/clients/docs/java.html
 
     final Properties props = loadConfig(args[0]);
 
@@ -67,14 +75,15 @@ public class ConsumerExample {
           String key = record.key();
           DataRecord value = record.value();
           total_count += value.getCount();
-          System.out.printf("Consumed record with key %s and value %s, and updated total count to %d%n", key, value, total_count);
+          System.out.printf("Consumed record with key %s and value %s, and updated total count to %d%n", key, value,
+              total_count);
+          // Make a reference to SocketIO -> Send data to connected clients
         }
       }
     } finally {
       consumer.close();
     }
   }
-
 
   public static Properties loadConfig(String configFile) throws IOException {
     if (!Files.exists(Paths.get(configFile))) {
