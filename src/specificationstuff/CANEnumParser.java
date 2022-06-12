@@ -6,8 +6,10 @@ package specificationstuff;
 
 
 import java.util.ArrayList;
-
 import emreparser.*;
+import java.util.HashMap;
+import java.util.List;
+import java.math.BigInteger;
 
 //CONSULT DRIVE FOR EASIER OVERVIEW OF FUNCTIONS - https://drive.google.com/drive/u/0/folders/1vgE6a2_4SK2RJL6YsllVkD5Wmiu9INAC 
 
@@ -29,8 +31,6 @@ import emreparser.*;
  *
  * @author 20172420
  */
-import java.util.HashMap;
-import java.util.List;
 
 public class CANEnumParser {
 	//The idea of this class is that we receive a CAN message such as the string 'testmsg' down below, and we convert it to a hashmap that contains the name of the variable
@@ -144,7 +144,7 @@ public class CANEnumParser {
 		return parsedEnums;
 	}
 
-	//Takes a CAN message "(1600453413.322000) canx 12d#01c90100a819d400" (which is in hexadecimal notation and contains 8 bytes) to a list of bytes 
+	//Takes a CAN message "(1600453413.322000) canx 12d#01c90100a819d400" (which is in hexadecimal notation and contains 8 bytes) to a list of Strings
 	//should be returned as a list that contains the following bytes: "00000001 11001001 00000001 00000000 10101000 00011001 11010100 00000000"
 	public List<String> parseDataList(String CANMessage) {
 		List<String> result;
@@ -160,15 +160,23 @@ public class CANEnumParser {
     	return result;
 	}
 
+	//Converts a hexadecimal strong to a (unpadded) binary string. Used in parseDataString()
+	static String hexToBin(String s) {
+		return new BigInteger(s, 16).toString(2);
+	}
+
 	//Converts a CAN message "(1600453413.322000) canx 12d#01c90100a819d400" (which is in hexadecimal notation and contains 8 bytes) to a String:
 	// "00000001 11001001 00000001 00000000 10101000 00011001 11010100 00000000". I'm not sure yet whether a list or string is more convenient, so we use both.
-	public String parseDataString(String CANMessage) {
+	public static String parseDataString(String CANMessage) {
 		String result;
 
 		String[] split0 = CANMessage.split("#"); //split0[1] = "01c90100a819d400"
 
-		int data = Integer.parseInt(split0[1], 16);
-		result = String.valueOf(data);
+		//int data = Integer.parseInt(split0[1], 16);
+		//result = String.valueOf(data);
+		//result = Integer.toBinaryString(Integer.parseInt(split0[1], 16)); 
+		result = hexToBin(split0[1]);
+		result = String.format("%064d", new BigInteger(result));
 
     	return result;
 	}
@@ -176,9 +184,9 @@ public class CANEnumParser {
 
 	//takes a CAN message "(1600453413.322000) canx 12d#01c90100a819d400" and returns the string id. The id is represented by the characters after canx and before the #. In this
 	//example the id is denoted by 12d. Note: this is in hexadecimal. The id in this case is equal to 301.
-	public int parseID(String CANMessage) {
+	public static int parseID(String CANMessage) {
 		String[] split0 = CANMessage.split("x");
-		String[] split1 = split0[0].split(" ");  //split0[0] = " 12d#01c90100a819d400"
+		String[] split1 = split0[1].split(" ");  //split0[1] = " 12d#01c90100a819d400"
 		String[] split2 = split1[1].split("#");  //split1[1] = "12d#01c90100a819d400"
 		String idInHex = split2[0]; //take the 'left side' after splitting "12d#01c90100a819d400" on "#"
 		int ID = Integer.parseInt(idInHex,16); 
@@ -187,7 +195,7 @@ public class CANEnumParser {
 	}
 
 	//Takes a CAN message "(1600453413.322000) canx 12d#01c90100a819d400" and returns the timestamp associated with it.
-	public long parseTimestamp(String CANMessage) {
+	public static long parseTimestamp(String CANMessage) {
 		String[] split0 = CANMessage.split(")"); 
 		String[] split1 = split0[0].split("(");//split0[0] = "(1600453413.322000", split1[1] = "1600453413.322000" 
 
@@ -387,7 +395,7 @@ public class CANEnumParser {
 	
 	As for what the lists are, please refer to the overview on google drive.
 	*/
-	public String determineConcreteData(List<String> l1, List<String> l2, List<String> l3) {
+	public List<String> determineConcreteData(List<String> l1, List<String> l2, List<String> l3) {
 
 		List<String> result = new ArrayList<>();
 
@@ -433,53 +441,55 @@ public class CANEnumParser {
 					break;
 					
 				case "int8_t": 
-					String decimalValue; //final value to be calculated. Needs to be done in two steps: 1) determine if the value is negative or positive 2) determine value
+					String int8Value; //final value to be calculated. Needs to be done in two steps: 1) determine if the value is negative or positive 2) determine value
 
 					if(bytes.substring(0,1).equals("1")) { //if the first bit is a '1' the value is negative.
-						decimalValue = "-";
+						int8Value = "-";
 					}
 					
-					decimal.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2)));
-					result.add(decimal);
+					int8Value.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2)));
+					result.add(int8Value);
 					break;
 				
 				case "int16_t": 
-					String decimalValue; 
+					String int16Value; 
 
 					if(bytes.substring(0,1).equals("1")) { 
-						decimalValue = "-";
+						int16Value = "-";
 					}
 					
-					decimal.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2))); 
-					result.add(decimal);
+					int16Value.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2))); 
+					result.add(int16Value);
 					break;
 						
 				case "int32_t": 
-					String decimalValue; 
+					String int32Value; 
 
 					if(bytes.substring(0,1).equals("1")) { 
-						decimalValue = "-";
+						int32Value = "-";
 					}
 					
-					decimal.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2))); 
-					result.add(decimal);
+					int32Value.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2))); 
+					result.add(int32Value);
 					break;	
 				
 				case "int64_t": 
-					String decimalValue;
+					String int64Value;
 
 					if(bytes.substring(0,1).equals("1")) { 
-						decimalValue = "-";
+						int64Value = "-";
 					}
 					
-					decimal.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2)));
-					result.add(decimal);
+					int64Value.concat(Integer.toString(Integer.parseInt(bytes.substring(1), 2)));
+					result.add(int64Value);
 					break;
 				
 				case "float": 
 					int intBits = Integer.parseInt(bytes, 2);
-					String floatValue = Float.intBitsToFloat(intBits).toString();
-					result.add(floatValue);
+					Float floatValue = Float.intBitsToFloat(intBits);
+					String floatStringValue = floatValue.toString();
+
+					result.add(floatStringValue);
 					break;
 
 				default: //None of the other cases, thus it must be an enum.
@@ -489,8 +499,12 @@ public class CANEnumParser {
 					break;
 				}
 		}
-		String temp = "temp";
-		return temp;
+		return result;
+	}
+
+	public static void main(String[] args) {
+		String testmsg = "(1600453413.322000) canx 12d#01c90100a819d400";
+		System.out.println(parseID(testmsg));
 	}
 
 }
