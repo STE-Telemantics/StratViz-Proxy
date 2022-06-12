@@ -31,6 +31,9 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 
+//socketio imports
+import com.corundumstudio.socketio.listener.*;
+import com.corundumstudio.socketio.*;
 // Import socketio
 public class ConsumerExample {
 
@@ -43,6 +46,10 @@ public class ConsumerExample {
     // Create socketio server instance
     // Configure the instance
     // Enable the server/start the server
+    Configuration config = new Configuration();
+    config.setHostname("localhost");
+    config.setPort(3001);
+    final SocketIOServer server = new SocketIOServer(config);
 
     final String topic = args[1];
 
@@ -78,6 +85,16 @@ public class ConsumerExample {
           System.out.printf("Consumed record with key %s and value %s, and updated total count to %d%n", key, value,
               total_count);
           // Make a reference to SocketIO -> Send data to connected clients
+
+          //server,addEventListener("dataevent", records);
+
+          server.addEventListener("dataevent", record, new DataListener() {
+            @Override
+            public void onData(SocketIOClient client, ChatObject data, AckRequest ackRequest) {
+                // broadcast messages to all clients
+                server.getBroadcastOperations().sendEvent("dataevent", data);
+            }
+        });
         }
       }
     } finally {
