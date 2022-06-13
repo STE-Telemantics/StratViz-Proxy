@@ -5,12 +5,11 @@
 package specificationstuff;
 
 
-import java.util.ArrayList;
+import java.util.*;
+
 import emreparser.*;
-import java.util.HashMap;
-import java.util.List;
+
 import java.math.BigInteger;
-import java.util.Date;
 
 //CONSULT DRIVE FOR EASIER OVERVIEW OF FUNCTIONS - https://drive.google.com/drive/u/0/folders/1vgE6a2_4SK2RJL6YsllVkD5Wmiu9INAC 
 
@@ -379,6 +378,34 @@ public class CANEnumParser {
 			System.out.println("- " + s);
 		}
 		System.out.println();
+	}
+
+	/**
+	 * Print out all the unique datatypes that are present in the messages.csv file.
+	 *
+	 * Requested by Mathijs Moonen
+	 */
+	public static void printUniqueMessageTypes() {
+		// Set up a CANParser object and parse the messages.csv file
+		CANParser cp = new CANParser();
+		List<MessageObject> messageList = cp.parseMessagesDefault();
+
+		// Collect *all* the datatypes in an ArrayList. We'll pass this list to the printUniqueTypes function
+		List<String> allTypes = new ArrayList<>();
+
+		// Iterate over all the messages in the list and add their data types to an ArrayList
+		for (MessageObject mo : messageList) {
+
+			// Get the message types from this message object
+			String[] messageTypes = mo.getDataTypes();
+
+			// Add the message types for this message to the Arraylist
+			allTypes.addAll(Arrays.asList(messageTypes));
+		}
+
+		// We've collected all the message from all the message present in the Message list. Now print out the unique
+		// messages
+		printUniqueTypes(allTypes);
 	}
 
 	HashMap<String, HashMap<String, String>> enums = parseTypedef(); //the hashmap of enums with their corresponding byte sequence. See overview on the drive for details.
