@@ -32,7 +32,7 @@ public class CANParser {
         List<List<String>> arrayOfLines = null; 
 
         try { 
-            // THe default path where the format file resides. May be overridden if the filechooser is used
+            // The default path where the format file resides. May be overridden if the filechooser is used
             String filename = "src/CANParser/canparser/src/res/messages.csv";
             
             // Read in the filename depending on whether we want to choose a file or just use the default one
