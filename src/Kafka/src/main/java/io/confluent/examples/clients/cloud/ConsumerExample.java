@@ -85,16 +85,11 @@ public class ConsumerExample {
           System.out.printf("Consumed record with key %s and value %s, and updated total count to %d%n", key, value,
               total_count);
           // Make a reference to SocketIO -> Send data to connected clients
+          // This operation is called whe the event "dataevent" is called from the front end
+          // Once this operation is called the record is sent
+          // record holds all the information on one message
 
-          //server,addEventListener("dataevent", records);
-
-          server.addEventListener("dataevent", record, new DataListener() {
-            @Override
-            public void onData(SocketIOClient client, ChatObject data, AckRequest ackRequest) {
-                // broadcast messages to all clients
-                server.getBroadcastOperations().sendEvent("dataevent", data);
-            }
-        });
+          server.getBroadcastOperations().sendEvent("dataevent", record);
         }
       }
     } finally {
