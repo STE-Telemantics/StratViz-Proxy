@@ -33,6 +33,7 @@ import java.util.Date;
  * @author 20172420
  */
 
+
 public class CANEnumParser {
 	//The idea of this class is that we receive a CAN message such as the string 'testmsg' down below, and we convert it to a hashmap that contains the name of the variable
 	//together with its value. The example below should eventually output a hashmap that contains {(mode, ACUmode), (bmsAlive, T/F), (ssbAlive, T/F), (srvRegenAlive, T/F),
@@ -236,6 +237,8 @@ public class CANEnumParser {
 		
 		List<String> result = new ArrayList<String>();
 
+		printUniqueTypes(l1);
+
 		for (int i = 0; i < l1.size() + 1; i++) {
 			String dataType = l1.get(i);
 			dataType.replaceAll(" ", ""); //make "bool: 1" and "bool:1" equivalent
@@ -359,6 +362,23 @@ public class CANEnumParser {
 				}
 		}
 		return result;
+	}
+
+	/**
+	 * Iterate over a List of Strings and filter out all unique datatypes that are present in this List
+	 *
+	 * Print all the unique datatypes that remain from this list.
+	 */
+	public void printUniqueTypes(List<String> listOfTypes) {
+		// Do a conversion using a Set, since this collection prohibits duplicates it will do the filtering for us
+		List<String> uniqueList = new ArrayList<>(new HashSet<>(listOfTypes));
+
+		// Now that we have a list of unique Strings, print them out
+		System.out.println("The following unique Strings were found in this List: ");
+		for (String s : uniqueList) {
+			System.out.println("- " + s);
+		}
+		System.out.println();
 	}
 
 	HashMap<String, HashMap<String, String>> enums = parseTypedef(); //the hashmap of enums with their corresponding byte sequence. See overview on the drive for details.
