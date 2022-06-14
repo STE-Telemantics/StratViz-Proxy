@@ -375,7 +375,7 @@ public class CANEnumParser {
 		// Now that we have a list of unique Strings, print them out
 		System.out.println("The following unique Strings were found in this List: ");
 		for (String s : uniqueList) {
-			System.out.println("- " + s);
+			System.out.println("- " + s.trim());
 		}
 		System.out.println();
 	}
@@ -385,7 +385,7 @@ public class CANEnumParser {
 	 *
 	 * Requested by Mathijs Moonen
 	 */
-	public static void printUniqueMessageTypes() {
+	public void printUniqueMessageTypes() {
 		// Set up a CANParser object and parse the messages.csv file
 		CANParser cp = new CANParser();
 		List<MessageObject> messageList = cp.parseMessagesDefault();
@@ -400,7 +400,10 @@ public class CANEnumParser {
 			String[] messageTypes = mo.getDataTypes();
 
 			// Add the message types for this message to the Arraylist
-			allTypes.addAll(Arrays.asList(messageTypes));
+			for (String mt : messageTypes) {
+				// Exclude the value of predefined types, E.g. "bool: 1"
+				allTypes.add(mt.split(":")[0].trim());
+			}
 		}
 
 		// We've collected all the message from all the message present in the Message list. Now print out the unique
