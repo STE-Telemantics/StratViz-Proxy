@@ -26,6 +26,8 @@ import org.json.simple.parser.JSONParser;
 import io.confluent.kafka.serializers.KafkaJsonDeserializerConfig;
 
 import com.corundumstudio.socketio.*;
+import com.corundumstudio.socketio.listener.ConnectListener;
+import com.corundumstudio.socketio.listener.DisconnectListener;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -46,8 +48,28 @@ public class ConsumerExample {
     // Enable the server/start the server
     Configuration config = new Configuration();
     config.setHostname("localhost");
-    config.setPort(3001);
+    config.setPort(4000);
     final SocketIOServer server = new SocketIOServer(config);
+
+    server.addConnectListener(new ConnectListener() {
+
+      @Override
+      public void onConnect(SocketIOClient arg0) {
+        System.out.println("Client connected!");
+      }
+
+    });
+
+    server.addDisconnectListener(new DisconnectListener() {
+
+      @Override
+      public void onDisconnect(SocketIOClient arg0) {
+        System.out.println("Client disconnected!");
+      }
+
+    });
+
+    server.start();
 
     // Load properties from a local configuration file
     // Create the configuration file (e.g. at '$HOME/.confluent/java.config') with
@@ -73,17 +95,16 @@ public class ConsumerExample {
     consumer.subscribe(Arrays.asList(topics));
 
     JSONParser parser = new JSONParser();
+
     try {
       while (true) {
         ConsumerRecords<String, String> records = consumer.poll(100);
         for (ConsumerRecord<String, String> record : records) {
           String key = record.key();
           String value = record.value();
-          JSONObject obj = (JSONObject) parser.parse(value);
-          System.out.printf("Consumed record with key %s and value %s, object first key %s\n", key, value,
-              obj.keySet().toArray()[0]);
+          System.out.printf("Consumed record with key %s and value %s\n", key, value);
           // Make a reference to SocketIO -> Send data to connected clients
-          server.getBroadcastOperations().sendEvent("dataevent", record);
+          server.getBroadcastOperations().sendEvent("dataevent", parser.parse(value));
         }
       }
     } finally {
