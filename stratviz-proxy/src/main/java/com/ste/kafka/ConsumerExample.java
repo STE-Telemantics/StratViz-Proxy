@@ -133,7 +133,7 @@ public class ConsumerExample {
           server.getBroadcastOperations().sendEvent("dataevent", parser.parse(value));
 
           // Switch to next topic
-          consumer.unsubscribe();
+          //consumer.unsubscribe();
         }
       }
     } finally {
