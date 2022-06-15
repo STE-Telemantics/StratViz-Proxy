@@ -64,7 +64,7 @@ public class ProducerExample {
     // Follow these instructions to create this file:
     // https://docs.confluent.io/platform/current/tutorials/examples/clients/docs/java.html
     final Properties props = loadConfig(
-        "D:/Documents/School/SEP/StratViz-Proxy/stratviz-proxy/src/main/resources/java.config");
+        "stratviz-proxy/target/classes/java.config");
 
     // Create topic if needed
     final String topic = "test2";
@@ -80,23 +80,32 @@ public class ProducerExample {
     // Produce sample data
     final Long numMessages = 10L;
     for (Long i = 0L; i < numMessages; i++) {
-      String key = "alice";
+      String key = "car0";
       JSONObject obj = new JSONObject();
-      obj.put("count", Long.valueOf(i));
+      obj.put("timestamp", (System.currentTimeMillis() / 1000L));
+      obj.put("name", "ACU_KeepAlive");
+      JSONObject fieldObject = new JSONObject();
+      fieldObject.put("mode", "ACUModeRDW");
+      fieldObject.put("bmsAlive", true);
+      fieldObject.put("ssbAlive", true);
+      obj.put("fields", fieldObject);
       String record = obj.toString();
 
       System.out.printf("Producing record: %s\t%s%n", key, record);
-      producer.send(new ProducerRecord<String, String>(topic, key, record), new Callback() {
-        @Override
-        public void onCompletion(RecordMetadata m, Exception e) {
-          if (e != null) {
-            e.printStackTrace();
-          } else {
-            System.out.printf("Produced record to topic %s partition [%d] @ offset %d%n", m.topic(), m.partition(),
-                m.offset());
-          }
-        }
-      });
+      // TODO: Modify partition to reasonable number and change
+      // System.currentTimeMillis to actual timestamp
+      producer.send(new ProducerRecord<String, String>(topic, 0, (Long) obj.get("timestamp"), key, record),
+          new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata m, Exception e) {
+              if (e != null) {
+                e.printStackTrace();
+              } else {
+                System.out.printf("Produced record to topic %s partition [%d] @ offset %d%n", m.topic(), m.partition(),
+                    m.offset());
+              }
+            }
+          });
     }
 
     producer.flush();
