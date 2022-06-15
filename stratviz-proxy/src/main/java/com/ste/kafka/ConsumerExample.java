@@ -23,8 +23,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import io.confluent.kafka.serializers.KafkaJsonDeserializerConfig;
-
 import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;

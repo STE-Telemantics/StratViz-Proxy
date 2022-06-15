@@ -21,13 +21,6 @@
     <jacoco.unit-tests.limit.method-complexity>5</jacoco.unit-tests.limit.method-complexity>
   </properties>
 
-<repositories>
-  <repository>
-    <id>confluent</id>
-    <url>http://packages.confluent.io/maven/</url>
-  </repository>
-</repositories>
-
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -50,11 +43,6 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>2.13.3</version>
-    </dependency>
-    <dependency>
-      <groupId>io.confluent</groupId>
-      <artifactId>kafka-json-serializer</artifactId>
-      <version>7.1.1</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
