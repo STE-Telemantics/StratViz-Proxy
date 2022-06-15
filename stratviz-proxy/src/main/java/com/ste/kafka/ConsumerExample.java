@@ -20,10 +20,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.listener.ConnectListener;
+import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 
 import java.io.FileInputStream;
@@ -57,6 +59,30 @@ public class ConsumerExample {
 
     });
 
+    server.addEventListener("historical", String.class, new DataListener<String>() {
+
+      @Override
+      public void onData(SocketIOClient arg0, String data, AckRequest arg2) {
+        // Consume historical data based on data using KSQL
+
+        arg0.sendEvent("historical-callback", "the data that was consumed", null);
+      }
+
+    });
+
+    server.addEventListener("client-subscribe", JSONObject.class, new DataListener<JSONObject>() {
+
+      @Override
+      public void onData(SocketIOClient arg0, JSONObject arg1, AckRequest arg2) throws Exception {
+        // TODO Auto-generated method stub
+
+        // Check what topic the client wants to subscribe to
+        // Check if the consumer is already subscribed to the topic
+        // If not subscribe consumer to topic
+      }
+
+    });
+
     server.addDisconnectListener(new DisconnectListener() {
 
       @Override
@@ -79,7 +105,7 @@ public class ConsumerExample {
     final String old = "io.confluent.kafka.serializers.KafkaJsonDeserializer";
     // TODO:
     final Properties props = loadConfig(
-        "D:/Documents/School/SEP/StratViz-Proxy/stratviz-proxy/src/main/resources/java.config");
+        "stratviz-proxy/target/classes/java.config");
 
     // Add additional properties.
     props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
@@ -97,11 +123,17 @@ public class ConsumerExample {
       while (true) {
         ConsumerRecords<String, String> records = consumer.poll(100);
         for (ConsumerRecord<String, String> record : records) {
+          // Check which topic the record was from
+          // Then check which clients are subscribed to this topic
+          // Send the record to the appropriate clients
           String key = record.key();
           String value = record.value();
           System.out.printf("Consumed record with key %s and value %s\n", key, value);
           // Make a reference to SocketIO -> Send data to connected clients
           server.getBroadcastOperations().sendEvent("dataevent", parser.parse(value));
+
+          // Switch to next topic
+          consumer.unsubscribe();
         }
       }
     } finally {

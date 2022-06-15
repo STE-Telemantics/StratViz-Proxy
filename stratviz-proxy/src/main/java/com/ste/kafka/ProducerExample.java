@@ -29,7 +29,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import org.apache.kafka.common.errors.TopicExistsException;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.InputStream;
@@ -65,7 +64,7 @@ public class ProducerExample {
     // Follow these instructions to create this file:
     // https://docs.confluent.io/platform/current/tutorials/examples/clients/docs/java.html
     final Properties props = loadConfig(
-        "D:/Documents/School/SEP/StratViz-Proxy/stratviz-proxy/src/main/resources/java.config");
+        "stratviz-proxy/target/classes/java.config");
 
     // Create topic if needed
     final String topic = "test2";
