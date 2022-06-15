@@ -86,17 +86,20 @@ public class ProducerExample {
       String record = obj.toString();
 
       System.out.printf("Producing record: %s\t%s%n", key, record);
-      producer.send(new ProducerRecord<String, String>(topic, key, record), new Callback() {
-        @Override
-        public void onCompletion(RecordMetadata m, Exception e) {
-          if (e != null) {
-            e.printStackTrace();
-          } else {
-            System.out.printf("Produced record to topic %s partition [%d] @ offset %d%n", m.topic(), m.partition(),
-                m.offset());
-          }
-        }
-      });
+      // TODO: Modify partition to reasonable number and change
+      // System.currentTimeMillis to actual timestamp
+      producer.send(new ProducerRecord<String, String>(topic, 0, System.currentTimeMillis(), key, record),
+          new Callback() {
+            @Override
+            public void onCompletion(RecordMetadata m, Exception e) {
+              if (e != null) {
+                e.printStackTrace();
+              } else {
+                System.out.printf("Produced record to topic %s partition [%d] @ offset %d%n", m.topic(), m.partition(),
+                    m.offset());
+              }
+            }
+          });
     }
 
     producer.flush();
