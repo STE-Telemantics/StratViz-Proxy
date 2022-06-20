@@ -67,7 +67,7 @@ public class ProducerExample {
       "stratviz-proxy/target/classes/java.config");
 
     // Create topic if needed
-    final String topic = "test2";
+    final String topic = "test_for_streams";
     createTopic(topic, props);
 
     // Add additional properties.

@@ -1,0 +1,8 @@
+CREATE TABLE TEST_TABLE_TWO(
+    timestamp BIGINT PRIMARY KEY,
+    name VARCHAR,
+  	fields VARCHAR
+  ) WITH (
+    KAFKA_TOPIC = 'test2',
+    VALUE_FORMAT = 'JSON'
+  ) AS SELECT * FROM TEST_FOUR;
