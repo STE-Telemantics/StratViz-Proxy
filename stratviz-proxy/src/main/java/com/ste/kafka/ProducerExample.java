@@ -64,10 +64,10 @@ public class ProducerExample {
     // Follow these instructions to create this file:
     // https://docs.confluent.io/platform/current/tutorials/examples/clients/docs/java.html
     final Properties props = loadConfig(
-        "stratviz-proxy/target/classes/java.config");
+      "stratviz-proxy/target/classes/java.config");
 
     // Create topic if needed
-    final String topic = "test2";
+    final String topic = "test_for_streams";
     createTopic(topic, props);
 
     // Add additional properties.

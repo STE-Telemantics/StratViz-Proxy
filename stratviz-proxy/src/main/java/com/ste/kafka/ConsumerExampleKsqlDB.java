@@ -37,7 +37,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 // Import socketio
-public class ConsumerExample {
+public class ConsumerExampleKsqlDB {
 
   static String[] topics = { "test2" };
 
