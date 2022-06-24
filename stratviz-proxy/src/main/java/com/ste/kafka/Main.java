@@ -53,7 +53,7 @@ public class Main {
   // subscribed to
   static Map<UUID, Map<String, Set<String>>> clientKeys = new HashMap<>();
 
-  static String[] validKeys = { "car0", "car1", "car2" };
+  static String[] validKeys = { "car1", "car2", "car3" };
 
   public static void main(final String[] args) throws Exception {
 
