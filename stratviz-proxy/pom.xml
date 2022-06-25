@@ -73,6 +73,28 @@
       <scope>system</scope>
       <systemPath>${project.basedir}/src/main/resources/ksqldb-api-client-7.1.1.jar</systemPath>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+      <version>4.3.1</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.reactivestreams/reactive-streams -->
+    <dependency>
+      <groupId>org.reactivestreams</groupId>
+      <artifactId>reactive-streams</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/io.confluent.ksql/ksqldb-api-client -->
+    <dependency>
+      <groupId>io.confluent.ksql</groupId>
+      <artifactId>ksqldb-api-client</artifactId>
+      <version>7.1.1</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
