@@ -42,6 +42,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
+import io.confluent.ksql.api.client.Client;
+import io.confluent.ksql.api.client.ClientOptions;
+
 // Import socketio
 public class Main {
 
@@ -54,6 +57,8 @@ public class Main {
   static Map<UUID, Map<String, Set<String>>> clientKeys = new HashMap<>();
 
   static String[] validKeys = { "car0", "car1", "car2" };
+
+  static Client client;
 
   public static void main(final String[] args) throws Exception {
 
@@ -70,6 +75,15 @@ public class Main {
     Set<String> topics = consumer.listTopics().keySet();
     // Subscribe to all topics
     consumer.subscribe(topics);
+
+    // Connect to
+    ClientOptions options = ClientOptions.create()
+      .setBasicAuthCredentials("DFQ4WU7SFIXEJZ24", "qxlVD0GrprCPIFw2w3Is2KwCtD1q9+chLt63qAwSYJurvfIAC3ZEd/n3BdIk4K/7")
+      .setHost("https://pksqlc-1nvr6.europe-west1.gcp.confluent.cloud:443")
+      .setPort(443)
+      .setUseTls(true)
+      .setUseAlpn(true);
+    client = Client.create(options);
 
     // Create a JSON Parser that can parse the data from Kafka into a JSON object
     JSONParser parser = new JSONParser();
@@ -120,6 +134,7 @@ public class Main {
       }
     } finally {
       consumer.close();
+      client.close();
     }
   }
 
@@ -162,15 +177,41 @@ public class Main {
 
     });
     // Add the 'historical' event listener, which will do blabla
-    server.addEventListener("historical", String.class, new DataListener<String>() {
+    server.addEventListener("historical", JSONObject.class, new DataListener<JSONObject>() {
 
       @Override
-      public void onData(SocketIOClient client, String data, AckRequest req) {
+      public void onData(SocketIOClient client, JSONObject data, AckRequest req) {
         // Consume historical data based on data using KSQL
         // data.topic = the topic of which the historical data is requested
         // data.key = the car for which the historical data is requested
         // data.start = timestamp of the beginning of the query
         // data.end = timestamp of the end of the query
+
+        // query
+        String pullQuery = "SELECT timestamp, name, fields " 
+                        + "FROM  STREAM_TEST "
+                        + "WHERE timestamp > 3 AND timestamp < 30 "
+                        + "AND name = 'maimunka';";
+
+        // client must be an object of class Client
+
+        ClientOptions options = ClientOptions.create();
+        Client testClient = Client.create(options);
+        
+        BatchedQueryResult batchedQueryResult = testClient.executeQuery(pullQuery);
+
+        // Wait for query result
+        List<Row> resultRows = batchedQueryResult.get();
+
+        // Useless?
+        System.out.println("Received results. Num rows: " + resultRows.size());
+        for (Row row : resultRows) {
+          System.out.println("Row: " + row.values());
+        }
+
+        // client must be an object of class Client
+        //client.insertInto();
+        data.get("topic");
 
         // Do some consumer stuff to retrieve data
 
