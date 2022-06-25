@@ -225,34 +225,30 @@ public class Main {
       return;
     }
 
-    // If there are already clients subscribed to the topic
-    if (clientSubscriptions.containsKey(topic)) {
-      // Simply add the client to the set of subscribers
-      clientSubscriptions.get(topic).add(clientId);
+    // If there are no clients subscribed to the topic yet
+    if (!clientSubscriptions.containsKey(topic)) {
+      // Add the topic to the mapping
+      clientSubscriptions.put(topic, new HashSet<>());
+    }
 
-      // If the client was subscribed to some topic already
-      if (clientKeys.containsKey(clientId)) {
-        // If the client was already subscribed to that topic
-        if (clientKeys.get(clientId).containsKey(topic)) {
-          // Add the key to the set of keys
-          clientKeys.get(clientId).get(topic).add(key);
-        } else {
-          // If not, we need to create a new set of keys for this topic and add the key
-          Set<String> keys = new HashSet<>();
-          keys.add(key);
-          clientKeys.get(clientId).put(topic, keys);
-        }
-      } else {
-        // Otherwise, create the client key mapping
-        Map<String, Set<String>> map = new HashMap<>();
-        Set<String> keys = new HashSet<>();
+    // Add the client to the set of subscribers
+    clientSubscriptions.get(topic).add(clientId);
 
-        // And add the key and topic
-        keys.add(key);
-        map.put(topic, keys);
+    // If the client was not subscribed to some topic before
+    if (!clientKeys.containsKey(clientId)) {
+      // Create a clientKey mapping
+      clientKeys.put(clientId, new HashMap<>());
+    }
 
-        clientKeys.put(clientId, map);
-      }
+    // If the client was already subscribed to this topic
+    if (clientKeys.get(clientId).containsKey(topic)) {
+      // Add the key to the set of keys
+      clientKeys.get(clientId).get(topic).add(key);
+    } else {
+      // If not, we need to create a new set of keys for this topic and add the key
+      Set<String> keys = new HashSet<>();
+      keys.add(key);
+      clientKeys.get(clientId).put(topic, keys);
     }
   }
 
@@ -265,7 +261,7 @@ public class Main {
     }
   }
 
-  // Unsubscribes the client from this topic
+  // Unsubscribes the client from a topic entirely
   static void unsubscribeClient(UUID clientId, String topic) {
     for (String key : validKeys) {
       // Unsubscribe the client with that key from the topic
