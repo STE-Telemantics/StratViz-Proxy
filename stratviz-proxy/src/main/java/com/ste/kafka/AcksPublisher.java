@@ -12,10 +12,6 @@
  * WARRANTIES OF ANY KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations under the License.
  */
-<<<<<<< HEAD
-=======
-
->>>>>>> f43241fa0d9bb9b159368bae89bd10955d798635
 package com.ste.kafka;
 
 import org.reactivestreams.Publisher;
