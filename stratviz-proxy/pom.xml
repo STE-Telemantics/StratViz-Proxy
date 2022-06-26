@@ -95,6 +95,19 @@
       <artifactId>ksqldb-api-client</artifactId>
       <version>7.1.1</version>
     </dependency>
+    <!-- Added to make @SuppressFBWarnings work -->
+    <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>annotations</artifactId>
+        <version>3.0.1</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.1</version>
+        <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
