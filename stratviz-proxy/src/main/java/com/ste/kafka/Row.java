@@ -13,10 +13,12 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package io.confluent.ksql.api.client;
+package com.ste.kafka;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import io.confluent.ksql.api.client.KsqlArray;
 
 /**
  * A single record, returned as part of a query result.

@@ -13,7 +13,9 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package io.confluent.ksql.api.client;
+package com.ste.kafka;
+
+import io.confluent.ksql.api.client.ConnectorType;
 
 public interface ConnectorInfo {
 

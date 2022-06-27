@@ -90,11 +90,18 @@
       <version>1.0.4</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/io.confluent.ksql/ksqldb-api-client -->
-    <dependency>
+    <!-- <dependency>
       <groupId>io.confluent.ksql</groupId>
       <artifactId>ksqldb-api-client</artifactId>
       <version>7.1.1</version>
+    </dependency> -->
+    <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>r05</version>
     </dependency>
+
   </dependencies>
   <build>
     <plugins>
@@ -141,6 +148,7 @@
         </configuration>
         <executions>
           <execution>
+            <?m2e execute onConfiguration?>
             <id>checkstyle</id>
             <phase>validate</phase>
             <goals>

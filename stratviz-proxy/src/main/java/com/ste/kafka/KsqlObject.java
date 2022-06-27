@@ -15,6 +15,7 @@
 
 package com.ste.kafka;
 
+import io.confluent.ksql.api.client.KsqlArray;
 import io.vertx.core.json.JsonObject;
 import java.math.BigDecimal;
 import java.util.Iterator;

@@ -13,7 +13,7 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package io.confluent.ksql.api.client;
+package com.ste.kafka;
 
 /**
  * The type of a column returned as part of a query result.

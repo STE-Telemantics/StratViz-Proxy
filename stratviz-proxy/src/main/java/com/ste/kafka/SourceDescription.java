@@ -18,6 +18,8 @@ package com.ste.kafka;
 import java.util.List;
 import java.util.Optional;
 
+import io.confluent.ksql.api.client.FieldInfo;
+
 /**
  * Metadata for a ksqlDB stream or table.
  */
