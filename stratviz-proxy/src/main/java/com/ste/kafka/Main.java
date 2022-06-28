@@ -200,8 +200,8 @@ public class Main {
 
         // query
         String pullQuery = "SELECT timestamp, name, fields " 
-                        + "FROM  STREAM_TEST "
-                        + "WHERE timestamp > 3 AND timestamp < 30 "
+                        + "FROM  STREAM_TEST " 
+                        /*+ "WHERE timestamp >" + Integer.toString(data.start) + "AND timestamp < " + Integer.toString(data.end)*/
                         + "AND name = 'maimunka';";
         
         BatchedQueryResult batchedQueryResult = ksqlDBClient.executeQuery(pullQuery); // Should be named client
