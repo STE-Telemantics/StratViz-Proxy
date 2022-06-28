@@ -194,11 +194,11 @@ public class Main {
                         + "AND name = 'maimunka';";
 
         // client must be an object of class Client
-
-        ClientOptions options = ClientOptions.create();
-        Client testClient = Client.create(options);
         
-        BatchedQueryResult batchedQueryResult = testClient.executeQuery(pullQuery);
+        // below an example object is created
+        ClientOptions options = ClientOptions.create(); // not part of the implementations
+        Client testClient = Client.create(options); // not part of the implementations
+        BatchedQueryResult batchedQueryResult = testClient.executeQuery(pullQuery); // Should be named client
 
         // Wait for query result
         List<Row> resultRows = batchedQueryResult.get();

@@ -96,6 +96,19 @@
       <version>7.1.1</version>
     </dependency> -->
     <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <!-- Added to make @SuppressFBWarnings work -->
+    <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>annotations</artifactId>
+        <version>3.0.1</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.1</version>
+        <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
