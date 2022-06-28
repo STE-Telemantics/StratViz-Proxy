@@ -1,9 +1,9 @@
-CREATE STREAM STREAM_TEST_FIVE (
+CREATE STREAM STREAM_TEST (
     timestamp BIGINT,
     name VARCHAR,
-  	fields STRUCT VARCHAR
+  	fields VARCHAR
   ) WITH (
-    KAFKA_TOPIC = 'test_for_streams',
+    KAFKA_TOPIC = 'stream_test',
     PARTITIONS = 1,
     VALUE_FORMAT = 'JSON'
   );
