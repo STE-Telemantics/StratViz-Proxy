@@ -3,7 +3,7 @@ CREATE STREAM STREAM_TEST (
     name VARCHAR,
   	fields VARCHAR
   ) WITH (
-    KAFKA_TOPIC = 'stream_test',
+    KAFKA_TOPIC = 'historical_test',
     PARTITIONS = 1,
     VALUE_FORMAT = 'JSON'
   );

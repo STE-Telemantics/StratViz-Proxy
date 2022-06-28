@@ -90,7 +90,7 @@ public class Main {
       .setHost(KSQLDB_SERVER_HOST)
       .setPort(KSQLDB_SERVER_HOST_PORT)
       .setUseTls(true)
-      .setUseAlpn(true);
+      .setUseAlpn(false);
     ksqlDBClient = Client.create(options);
 
     // Create a JSON Parser that can parse the data from Kafka into a JSON object
@@ -199,12 +199,19 @@ public class Main {
         // Do some consumer stuff to retrieve data
 
         // query
-        String pullQuery = "SELECT timestamp, name, fields " 
-                        + "FROM  STREAM_TEST "
-                        + "WHERE timestamp > 3 AND timestamp < 30 "
-                        + "AND name = 'maimunka';";
+        // String pullQuery = "SELECT timestamp, name, fields " 
+        //                 + "FROM  STREAM_TEST "
+        //                 + "WHERE timestamp > 3 AND timestamp < 30 "
+        //                 + "AND name = 'maimunka';";
+
+        // test query
+        String testQuery = "SELECT timestamp, name"
+                          + "FROM STREAM_TEST";
+                          
         
-        BatchedQueryResult batchedQueryResult = ksqlDBClient.executeQuery(pullQuery); // Should be named client
+        BatchedQueryResult batchedQueryResult = ksqlDBClient.executeQuery(testQuery); // Should be named client
+        
+        // Form of array for results 
 
         // Wait for query result
         // polish the exception handling
@@ -226,7 +233,7 @@ public class Main {
         //client.insertInto();
         //data.get("topic");
 
-        req.sendAckData(new Integer(1));// Replace with actual data retrieved from KSQL
+        req.sendAckData(new Object());// Replace with actual data retrieved from KSQL
       }
 
     });
