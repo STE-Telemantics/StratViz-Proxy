@@ -37,10 +37,17 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+
+import io.confluent.ksql.api.client.BatchedQueryResult;
+import io.confluent.ksql.api.client.Client;
+import io.confluent.ksql.api.client.ClientOptions;
+import io.confluent.ksql.api.client.Row;
 
 // Import socketio
 public class Main {
@@ -54,6 +61,12 @@ public class Main {
   static Map<UUID, Map<String, Set<String>>> clientKeys = new HashMap<>();
 
   static String[] validKeys = { "car1", "car2", "car3" };
+
+  static Client ksqlDBClient;
+
+  // Set the host and the port for the ksqlDB cluster
+  public static String KSQLDB_SERVER_HOST = "https://pksqlc-1nvr6.europe-west1.gcp.confluent.cloud";
+  public static int KSQLDB_SERVER_HOST_PORT = 443;
 
   public static void main(final String[] args) throws Exception {
 
@@ -70,6 +83,15 @@ public class Main {
     Set<String> topics = consumer.listTopics().keySet();
     // Subscribe to all topics
     consumer.subscribe(topics);
+
+    // Connect to
+    ClientOptions options = ClientOptions.create()
+      .setBasicAuthCredentials("DFQ4WU7SFIXEJZ24", "qxlVD0GrprCPIFw2w3Is2KwCtD1q9+chLt63qAwSYJurvfIAC3ZEd/n3BdIk4K/7")
+      .setHost(KSQLDB_SERVER_HOST)
+      .setPort(KSQLDB_SERVER_HOST_PORT)
+      .setUseTls(true)
+      .setUseAlpn(true);
+    ksqlDBClient = Client.create(options);
 
     // Create a JSON Parser that can parse the data from Kafka into a JSON object
     JSONParser parser = new JSONParser();
@@ -120,6 +142,8 @@ public class Main {
       }
     } finally {
       consumer.close();
+      // terminate the ksqlDB client
+      ksqlDBClient.close();
     }
   }
 
@@ -173,6 +197,34 @@ public class Main {
         // data.end = timestamp of the end of the query
 
         // Do some consumer stuff to retrieve data
+
+        // query
+        String pullQuery = "SELECT timestamp, name, fields " 
+                        + "FROM  STREAM_TEST "
+                        + "WHERE timestamp > 3 AND timestamp < 30 "
+                        + "AND name = 'maimunka';";
+        
+        BatchedQueryResult batchedQueryResult = ksqlDBClient.executeQuery(pullQuery); // Should be named client
+
+        // Wait for query result
+        // polish the exception handling
+        List<Row> resultRows;
+        try {
+          resultRows = batchedQueryResult.get();
+
+          // Replace with giving the data to the frontend
+          System.out.println("Received results. Num rows: " + resultRows.size());
+          for (Row row : resultRows) {
+            System.out.println("Row: " + row.values());
+          }
+        } catch (InterruptedException | ExecutionException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+
+        // client must be an object of class Client
+        //client.insertInto();
+        //data.get("topic");
 
         req.sendAckData(new Integer(1));// Replace with actual data retrieved from KSQL
       }
