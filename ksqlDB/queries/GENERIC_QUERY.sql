@@ -7,12 +7,6 @@ SELECT key, record
       AND name = 'maimunka';
 
 
-CREATE STREAM historical_test (
-  key VARCHAR KEY
-  record VARCHAR
-) WITH (
-  KAFKA_TOPIC = 'historical_test',	
-  VALUE_FORMAT = 'JSON'
-);
+
 
 -- SELECT timestamp, name, fields FROM  STREAM_TEST WHERE timestamp > 3 AND timestamp < 30 AND name = 'maimunka';
