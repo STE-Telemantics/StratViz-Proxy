@@ -1,6 +1,8 @@
-CREATE STREAM historical_test (
+CREATE STREAM historical_test2 (
   key VARCHAR KEY
-  record VARCHAR
+  name VARCHAR
+  timestamp BIGINT
+  value VARCHAR
 ) WITH (
   KAFKA_TOPIC = 'historical_test',	
   VALUE_FORMAT = 'JSON'

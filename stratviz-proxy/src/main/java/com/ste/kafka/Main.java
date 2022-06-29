@@ -27,6 +27,7 @@ import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
+import com.eclipsesource.json.ParseException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,12 +44,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import io.confluent.ksql.api.client.BatchedQueryResult;
 import io.confluent.ksql.api.client.Client;
 import io.confluent.ksql.api.client.ClientOptions;
 import io.confluent.ksql.api.client.Row;
+import org.apache.kafka.streams.errors.StreamsException;
 
 // Import socketio
 public class Main {
@@ -86,11 +88,9 @@ public class Main {
 
     // Connect to
     ClientOptions options = ClientOptions.create()
-      .setBasicAuthCredentials("DFQ4WU7SFIXEJZ24", "qxlVD0GrprCPIFw2w3Is2KwCtD1q9+chLt63qAwSYJurvfIAC3ZEd/n3BdIk4K/7")
-      .setHost(KSQLDB_SERVER_HOST)
-      .setPort(KSQLDB_SERVER_HOST_PORT)
-      .setUseTls(true)
-      .setUseAlpn(false);
+        .setBasicAuthCredentials("DFQ4WU7SFIXEJZ24", "qxlVD0GrprCPIFw2w3Is2KwCtD1q9+chLt63qAwSYJurvfIAC3ZEd/n3BdIk4K/7")
+        .setExecuteQueryMaxResultRows(Integer.MAX_VALUE).setHost(KSQLDB_SERVER_HOST).setPort(KSQLDB_SERVER_HOST_PORT)
+        .setUseTls(true).setUseAlpn(true);
     ksqlDBClient = Client.create(options);
 
     // Create a JSON Parser that can parse the data from Kafka into a JSON object
@@ -186,30 +186,33 @@ public class Main {
 
     });
     // Add the 'historical' event listener, which will do blabla
-    server.addEventListener("historical", String.class, new DataListener<String>() {
+    server.addEventListener("historical", JSONObject.class, new DataListener<JSONObject>() {
 
       @Override
-      public void onData(SocketIOClient client, String data, AckRequest req) {
+      public void onData(SocketIOClient client, JSONObject data, AckRequest req) {
         // Consume historical data based on data using KSQL
-        // data.topic = the topic of which the historical data is requested
-        // data.key = the car for which the historical data is requested
-        // data.start = timestamp of the beginning of the query
-        // data.end = timestamp of the end of the query
+        // data.topic = the topic of which the historical data is requested (String)
+        // data.key = the car for which the historical data is requested (String)
+        // data.start = timestamp of the beginning of the query (Long)
+        // data.end = timestamp of the end of the query (Long)
 
-        // Do some consumer stuff to retrieve data
+        String theQuery = String.format(
+            "SELECT * FROM HISTORICAL_TEST WHERE NAME = '%s' AND KEY = '%s' AND TIMESTAMP > %d AND TIMESTAMP < %d ;",
+            data.get("topic"), data.get("key"), data.get("start"), data.get("end"));
 
-        // query
-        // String pullQuery = "SELECT timestamp, name, fields " 
-        //                 + "FROM  STREAM_TEST " 
-        //                 /*+ "WHERE timestamp >" + Integer.toString(data.start) + "AND timestamp < " + Integer.toString(data.end)*/
-        //                 + "AND name = 'maimunka';";
-        // test query
-        String testQuery = "SELECT timestamp, name"
-                          + "FROM STREAM_TEST";
-        
-        BatchedQueryResult batchedQueryResult = ksqlDBClient.executeQuery(testQuery); // Should be named client
-        
-        // Form of array for results 
+        BatchedQueryResult batchedQueryResult = null;
+
+        try {
+          batchedQueryResult = ksqlDBClient.executeQuery(theQuery); // Should be named client
+        } catch (StreamsException e) {
+          e.printStackTrace();
+        }
+
+        // Create a JSON parser
+        JSONParser parser = new JSONParser();
+
+        // Form of array for results
+        List<JSONObject> results = new ArrayList<>();
 
         // Wait for query result
         // polish the exception handling
@@ -219,21 +222,19 @@ public class Main {
 
           // Replace with giving the data to the frontend
           System.out.println("Received results. Num rows: " + resultRows.size());
+
           for (Row row : resultRows) {
-            System.out.println("Row: " + row.values());
+            System.out.println("Row: " + row.values().getString(3));
+            results.add((JSONObject) parser.parse(row.values().getString(3)));
           }
-        } catch (InterruptedException | ExecutionException e) {
+
+        } catch (Exception e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
         }
 
-        // client must be an object of class Client
-        //client.insertInto();
-        //data.get("topic");
-
-        req.sendAckData(new Object());// Replace with actual data retrieved from KSQL
+        req.sendAckData(results.toArray());// Replace with actual data retrieved from KSQL
       }
-
     });
 
     // Add the 'client-subscribe' event listener, which will be called when a client
