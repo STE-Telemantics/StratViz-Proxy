@@ -3,8 +3,7 @@ package com.ste.kafka;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import com.corundumstudio.socketio.AckRequest;
-import com.corundumstudio.socketio.SocketIOClient;
+import org.apache.kafka.streams.errors.StreamsException;
 
 import io.confluent.ksql.api.client.BatchedQueryResult;
 import io.confluent.ksql.api.client.Client;
@@ -39,15 +38,28 @@ public class Historical {
                 .setHost(KSQLDB_SERVER_HOST)
                 .setPort(KSQLDB_SERVER_HOST_PORT)
                 .setUseTls(true)
-                .setUseAlpn(false);
+                .setUseAlpn(true);
             ksqlDBClient = Client.create(options);
+            System.out.println("1");
     
             // test query
-            String testQuery = "SELECT timestamp, name"
+            String testQuery = "SELECT *"
                               + "FROM STREAM_TEST";
-                              
+
+            String pullQuery = "SELECT timestamp, name, fields"
+                              + "FROM  STREAM_TEST"
+                              + "WHERE timestamp > 3 AND timestamp < 20 AND name = 'maimunka'";
             
-            BatchedQueryResult batchedQueryResult = ksqlDBClient.executeQuery(testQuery); // Should be named client
+                            
+                              
+            System.out.println("2");
+            BatchedQueryResult batchedQueryResult = null;
+            try{
+            batchedQueryResult = ksqlDBClient.executeQuery(testQuery); // Should be named client
+            }catch (StreamsException e){
+              e.printStackTrace();
+            }
+            System.out.println("3");
             
             // Form of array for results 
     
@@ -56,17 +68,19 @@ public class Historical {
             List<Row> resultRows;
             try {
               resultRows = batchedQueryResult.get();
+              System.out.println("4");
     
               // Replace with giving the data to the frontend
               System.out.println("Received results. Num rows: " + resultRows.size());
               for (Row row : resultRows) {
                 System.out.println("Row: " + row.values());
               }
+              System.out.println("5");
             } catch (InterruptedException | ExecutionException e) {
               // TODO Auto-generated catch block
               e.printStackTrace();
             }
-    
+            System.out.println("6");
             // client must be an object of class Client
             //client.insertInto();
             //data.get("topic");

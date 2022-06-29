@@ -90,6 +90,12 @@
       <artifactId>netty-socketio</artifactId>
       <version>1.7.19</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-streams -->
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-streams</artifactId>
+      <version>3.2.0</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
