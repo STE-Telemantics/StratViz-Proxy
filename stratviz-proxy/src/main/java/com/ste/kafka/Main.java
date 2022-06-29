@@ -88,31 +88,34 @@ public class Main {
           // Get the topic to which the record belongs
           String topic = record.topic();
 
+          // Create an JSON object that the client can use to retrieve the data
+          JSONObject data = new JSONObject();
+          data.put("topic", topic);
+          data.put("key", key);
+          data.put("data", value);
+
+          server.getBroadcastOperations().sendEvent("dataevent", data);
+
           // Check if there is at least one client subscribed to the topic
-          if (clientSubscriptions.containsKey(topic)) {
-            // Create an JSON object that the client can use to retrieve the data
-            JSONObject data = new JSONObject();
-            data.put("topic", topic);
-            data.put("key", key);
-            data.put("value", value);
+          // if (clientSubscriptions.containsKey(topic)) {
 
-            // If so, iterate over all clients that are subscribed
-            for (UUID clientId : clientSubscriptions.get(topic)) {
-              // For each subscribed client get the set of keys to which the client is
-              // subscribed for this topic
-              Set<String> keys = clientKeys.get(clientId).get(topic);
+          // // If so, iterate over all clients that are subscribed
+          // for (UUID clientId : clientSubscriptions.get(topic)) {
+          // // For each subscribed client get the set of keys to which the client is
+          // // subscribed for this topic
+          // Set<String> keys = clientKeys.get(clientId).get(topic);
 
-              // Ensure we don't try to access a null object
-              if (keys == null)
-                continue;
+          // // Ensure we don't try to access a null object
+          // if (keys == null)
+          // continue;
 
-              // If the record has a key that the client is subscribed to
-              if (keys.contains(key)) {
-                // Send the value to the client
-                server.getClient(clientId).sendEvent("dataevent", null, data);
-              }
-            }
-          }
+          // // If the record has a key that the client is subscribed to
+          // if (keys.contains(key)) {
+          // // Send the value to the client
+          // server.getClient(clientId).sendEvent("dataevent", null, data);
+          // }
+          // }
+          // }
           // If there are no subscribers, ignore the record.
           // We need to consume records even if there are no subscribers to ensure the
           // latest record is always sent to the client.
