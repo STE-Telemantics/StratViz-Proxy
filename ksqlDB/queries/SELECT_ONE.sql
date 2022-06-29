@@ -1,3 +1,0 @@
-SELECT timestamp, name, fields
-FROM STREAM_TEST_FIVE
-EMIT CHANGES;
