@@ -28,18 +28,18 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
   </properties>
+
   <repositories>
       <repository>
-          <id>ksqlDB</id>
-          <name>ksqlDB</name>
-          <url>http://packages.confluent.io/maven/</url>
+          <id>confluent</id>
+          <url>https://packages.confluent.io/maven/</url>
       </repository>
   </repositories>
 
   <pluginRepositories>
       <pluginRepository>
-          <id>ksqlDB</id>
-          <url>http://packages.confluent.io/maven/</url>
+          <id>confluent</id>
+          <url>https://packages.confluent.io/maven/</url>
       </pluginRepository>
   </pluginRepositories>
   <dependencies>
