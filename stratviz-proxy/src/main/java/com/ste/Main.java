@@ -1,4 +1,4 @@
-package com.ste.kafka;
+package com.ste;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -11,7 +11,6 @@ import org.json.simple.parser.JSONParser;
 import com.corundumstudio.socketio.*;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
-import com.corundumstudio.socketio.listener.DisconnectListener;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -20,14 +19,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 
 import io.confluent.ksql.api.client.BatchedQueryResult;
 import io.confluent.ksql.api.client.Client;
@@ -40,31 +34,34 @@ public class Main {
   static Client ksqlDBClient;
 
   // Set the host and the port for the ksqlDB cluster
-  public static String KSQLDB_SERVER_HOST = "https://pksqlc-03n59.westeurope.azure.confluent.cloud";
+  public static String KSQLDB_SERVER_HOST = "pksqlc-03n59.westeurope.azure.confluent.cloud";
   public static int KSQLDB_SERVER_HOST_PORT = 443;
 
+  @SuppressWarnings({ "unchecked" })
   public static void main(final String[] args) throws Exception {
 
     // Create a SocketIOServer instance
     final SocketIOServer server = createServer();
 
     // Load properties for the kafka consumer from a config file
-    final Properties props = loadProperties("stratviz-proxy/target/classes/java.config");
+    final Properties props = loadProperties("java.config");
+
+    final Properties ksqlProps = loadProperties("ksql.config");
 
     // Create the consumer using the properties
     final Consumer<String, String> consumer = new KafkaConsumer<String, String>(props);
 
     // Get all of the topics available in the cluster
     Set<String> topics = consumer.listTopics().keySet();
-    topics.remove("historical_test"); // except historical test
+
     // Subscribe to all topics
     consumer.subscribe(topics);
 
-    // Connect to
+    // Connect to ksqlDB
     ClientOptions options = ClientOptions.create()
-        .setBasicAuthCredentials("74TMMOSJTUZEBD3D", "jiY56u8L87eFMUshdqqpXgys8wmUtsxumxLfvZqfH2op6y5u6jx7ESy832+u1zAo")
-        .setExecuteQueryMaxResultRows(Integer.MAX_VALUE).setHost(KSQLDB_SERVER_HOST).setPort(KSQLDB_SERVER_HOST_PORT)
-        .setUseTls(true).setUseAlpn(true);
+        .setBasicAuthCredentials(ksqlProps.getProperty("username"), ksqlProps.getProperty("password"))
+        .setExecuteQueryMaxResultRows(Integer.MAX_VALUE).setHost(ksqlProps.getProperty("host"))
+        .setPort(Integer.parseInt(ksqlProps.getProperty("port"))).setUseTls(true).setUseAlpn(true);
     ksqlDBClient = Client.create(options);
 
     // Create a JSON Parser that can parse the data from Kafka into a JSON object
@@ -72,7 +69,7 @@ public class Main {
 
     try {
       while (true) {
-        // Get records every 100 milliseconds
+        // Get records every 1000 milliseconds
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
 
         // For every record that is consumed
@@ -80,17 +77,20 @@ public class Main {
           // The key for this record (= carId)
           String key = record.key();
           // Get the JSON object stored in the value
-          JSONObject value = (JSONObject) parser.parse(record.value());
+          JSONObject recordValue = (JSONObject) parser.parse(record.value());
           // Get the topic to which the record belongs
+          String value = (String) recordValue.get("value");
+          JSONObject idata = (JSONObject) parser.parse(value);
+
           String topic = record.topic();
 
           // Create an JSON object that the client can use to retrieve the data
           JSONObject data = new JSONObject();
           data.put("topic", topic);
           data.put("key", key);
-          data.put("data", value);
+          data.put("data", idata);
 
-          // Send all data to
+          // Send the data to all connected clients
           server.getBroadcastOperations().sendEvent("dataevent", data);
         }
       }
@@ -101,6 +101,7 @@ public class Main {
     }
   }
 
+  // Loads properties from the input file
   public static Properties loadProperties(String configFile) throws IOException {
     // Ensure the file exists
     if (!Files.exists(Paths.get(configFile))) {
@@ -123,6 +124,7 @@ public class Main {
     return props;
   }
 
+  // Creates a Socket IO server instance at port 4000
   public static SocketIOServer createServer() {
     // Create the SocketIOServer configuration
     Configuration config = new Configuration();
@@ -131,6 +133,8 @@ public class Main {
 
     final SocketIOServer server = new SocketIOServer(config);
 
+    // Add a connection listener that simply prints the session ID of the newly
+    // connected client
     server.addConnectListener(new ConnectListener() {
 
       @Override
@@ -139,7 +143,9 @@ public class Main {
       }
 
     });
-    // Add the 'historical' event listener, which will do blabla
+
+    // Add the 'historical' event listener, which will query kafka and send the
+    // results back to the client
     server.addEventListener("historical", JSONObject.class, new DataListener<JSONObject>() {
 
       @Override
@@ -150,16 +156,22 @@ public class Main {
         // data.start = timestamp of the beginning of the query (Long)
         // data.end = timestamp of the end of the query (Long)
 
+        System.out.println("Request received");
+
+        // Create the kafka query based on the input
         String theQuery = String.format(
-            "SELECT * FROM HISTORICAL_TEST WHERE NAME = '%s' AND KEY = '%s' AND TIMESTAMP > %d AND TIMESTAMP < %d ;",
-            data.get("topic"), data.get("key"), data.get("start"), data.get("end"));
+            "SELECT * FROM %s WHERE NAME = '%s' AND KEY = '%s' AND TIMESTAMP > %d AND TIMESTAMP < %d ;",
+            ((String) data.get("topic")).toUpperCase(), data.get("topic"), data.get("key"), data.get("start"),
+            data.get("end"));
 
         BatchedQueryResult batchedQueryResult = null;
 
+        // Execute the query
         try {
-          batchedQueryResult = ksqlDBClient.executeQuery(theQuery); // Should be named client
+          batchedQueryResult = ksqlDBClient.executeQuery(theQuery);
         } catch (StreamsException e) {
           e.printStackTrace();
+          return;
         }
 
         // Create a JSON parser
@@ -178,16 +190,15 @@ public class Main {
           System.out.println("Received results. Num rows: " + resultRows.size());
 
           for (Row row : resultRows) {
-            System.out.println("Row: " + row.values().getString(3));
             results.add((JSONObject) parser.parse(row.values().getString(3)));
           }
 
         } catch (Exception e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
 
-        req.sendAckData(results.toArray());// Replace with actual data retrieved from KSQL
+        // Now send back the results
+        req.sendAckData(results);
       }
     });
 
