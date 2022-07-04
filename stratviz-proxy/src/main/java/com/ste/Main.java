@@ -5,6 +5,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+
+import org.apache.kafka.streams.errors.StreamsException;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -27,7 +30,6 @@ import io.confluent.ksql.api.client.BatchedQueryResult;
 import io.confluent.ksql.api.client.Client;
 import io.confluent.ksql.api.client.ClientOptions;
 import io.confluent.ksql.api.client.Row;
-import org.apache.kafka.streams.errors.StreamsException;
 
 public class Main {
 
@@ -163,8 +165,7 @@ public class Main {
                 String theQuery = String.format(
                         "SELECT * FROM %s WHERE NAME = '%s' AND KEY = '%s' AND TIMESTAMP > %d AND TIMESTAMP < %d ;",
                         ((String) data.get("topic")).toUpperCase(), data.get("topic"), data.get("key"),
-                        data.get("start"),
-                        data.get("end"));
+                        data.get("start"), data.get("end"));
 
                 BatchedQueryResult batchedQueryResult = null;
 
